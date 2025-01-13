@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"math"
 	"strconv"
 	"strings"
 )
@@ -18,18 +19,18 @@ func main() {
 	values:=strings.Split(rawInput,",")
 
 	//Declaring New Variables for the Operation
-	var Principle, ROI, TII int
+	var Principle, ROI, TII float64
 
-	Principle,e1:=strconv.Atoi(values[0])
-	ROI,e2:=strconv.Atoi(values[1])
-	TII,e3:=strconv.Atoi(values[2])
+	Principle,e1:=strconv.ParseFloat(values[0],64)
+	ROI,e2:=strconv.ParseFloat(values[1],64)
+	TII,e3:=strconv.ParseFloat(values[2],64)
 
 	if e1!=nil || e2 !=nil || e3!=nil{
 		fmt.Println("Only Input Integer Value")
 		return
 	}
 
-	SI := (Principle * ROI * TII) / 100
+	SI := math.Round(((Principle * ROI * TII) / 100)*100)/100
 	fmt.Println("The Simple Interest generated on the given Principle $", Principle, "in", TII, "years is $", SI)
-	fmt.Println("Therefore the Total amount to be paid is: $", Principle+SI)
+	fmt.Println("Therefore the Total amount to be paid is: $", math.Round((Principle+SI)*100)/100)
 }
