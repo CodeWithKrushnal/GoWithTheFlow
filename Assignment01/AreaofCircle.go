@@ -13,7 +13,7 @@ func main() {
 	var radius float64
 	fmt.Scan(&radius)
 
-	area := math.Round((math.Pi * math.Pow(radius, 2)*100))/100
+	area := math.Round((math.Pi * math.Pow(radius, 2) * 100)) / 100
 
 	fmt.Println("The area of the circle of radius", radius, "is", area)
 }
