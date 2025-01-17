@@ -17,10 +17,11 @@ func main() {
 
 	//Validation and Result
 	if e1 == nil {
-		if weekDay > 0 && weekDay <= 7 {
-			fmt.Println("The Day for the index", weekDay, "is", days[weekDay])
+		day := days[weekDay]
+		if day != "" {
+			fmt.Println("The Day for the index", weekDay, "is", day)
 		} else {
-			fmt.Println("Invalid Number Entered")
+			fmt.Println("Not a Day")
 		}
 	} else {
 		fmt.Println("Invalid Input", e1)
