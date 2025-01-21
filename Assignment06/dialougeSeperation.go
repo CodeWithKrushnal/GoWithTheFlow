@@ -16,6 +16,13 @@ func main() {
 		return
 	}
 
+	aliceChannel := make(chan string)
+	bobChannel := make(chan string)
+
+	seperator(conevrsation, &aliceChannel, &bobChannel)
+}
+
+func seperator(conevrsation string, aliceChannel *chan string, bobChannel *chan string) {
 	startidx := 0
 
 	for idx, char := range conevrsation {
@@ -26,11 +33,21 @@ func main() {
 			continue
 		} else {
 			if char == 36 {
-				fmt.Println("alice : ", string(conevrsation[startidx:idx]))
+				go alicePrinter(aliceChannel)
+				*aliceChannel <- ("alice : " + string(conevrsation[startidx:idx]))
 			} else {
-				fmt.Println("bob : ", string(conevrsation[startidx:idx]))
+				go bobPrinter(bobChannel)
+				*bobChannel <- ("bob : " + string(conevrsation[startidx:idx]))
 			}
 			startidx = idx + 1
 		}
 	}
+}
+
+func alicePrinter(aliceChannel *chan string) {
+	fmt.Println(<-*aliceChannel)
+}
+
+func bobPrinter(bobChannel *chan string) {
+	fmt.Println(<-*bobChannel)
 }

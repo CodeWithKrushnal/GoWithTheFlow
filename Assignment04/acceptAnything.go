@@ -23,30 +23,29 @@ func main() {
 	case 1:
 		fmt.Println("You've Selected an option to Enter an Integer, Kindly Enter the Integer except 0 on next line")
 		var userInput1 int
-		fmt.Scanf("%d", &userInput1)
-		for userInput1 == 0 {
-			fmt.Println("Invalid Input please Enter the Integer value on next line")
-			fmt.Scanf("%d", &userInput1)
+		_, isEnteredError := fmt.Scanf("%d", &userInput1)
+		if isEnteredError != nil {
+			fmt.Println("You've Entered an Invalid input again Exiting the Program")
+			return
 		}
 		acceptAnything(userInput1)
 
 	case 2:
 		fmt.Println("You've Selected an option to Enter a String, Kindly Enter the String on next line")
 		var userInput2 string
-		fmt.Scanln(&userInput2)
-		for userInput2 == "" {
-			fmt.Println("You Haven't Entered Anything, Kindly Enter the String on next line")
-			fmt.Scanln(&userInput2)
+		_, isEnteredError := fmt.Scanln(&userInput2)
+		for isEnteredError != nil {
+			fmt.Println("You've Entered an Invalid input again Exiting the Program")
+			return
 		}
 		acceptAnything(userInput2)
 
 	case 3:
-		fmt.Println("You've Selected an option to Enter a boolean value, Kindly Enter 1 for true and 2 for false on next line")
+		fmt.Println("You've Selected an option to Enter a boolean value, Kindly Enter 1 for true and 0 for false on next line")
 		var userInput3 int
-		fmt.Scanf("%d", &userInput3)
-		for userInput3 != 1 && userInput3 != 2 {
-			fmt.Println("Invalid Input, Kindly Enter 1 for true and 2 for false on next line")
-			fmt.Scanf("%d", &userInput3)
+		_, isEnteredError := fmt.Scanf("%d", &userInput3)
+		if userInput3 < 0 || userInput3 > 1 || isEnteredError != nil {
+			fmt.Println("You've Entered an Invalid input again Exiting the Program")
 		}
 		if userInput3 == 1 {
 			acceptAnything(true)
@@ -57,10 +56,10 @@ func main() {
 	case 4:
 		fmt.Println("You've Selected an option to Enter a Custom Datatype value, Kindly Enter the Message on next line")
 		var userInput4 Hello
-		fmt.Scanln(&userInput4.message)
-		for userInput4.message == "" {
-			fmt.Println("You Haven't Entered Anything, Kindly Enter the message on next line")
-			fmt.Scanln(&userInput4.message)
+		_, isEnteredError := fmt.Scanln(&userInput4.message)
+		if isEnteredError != nil {
+			fmt.Println("You've Entered an Invalid input again Exiting the Program")
+			return
 		}
 		acceptAnything(userInput4)
 

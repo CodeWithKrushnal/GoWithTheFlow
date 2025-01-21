@@ -2,7 +2,7 @@ package main
 
 import (
 	"fmt"
-	"strings"
+	"sync"
 )
 
 func main() {
@@ -17,19 +17,23 @@ func main() {
 		return
 	}
 
-	stringReversalchannel := make(chan string)
-	go reverseString(forwardString, &stringReversalchannel)
-	fmt.Println(<-stringReversalchannel)
-	close(stringReversalchannel)
+	stringRune := []rune(forwardString)
+
+	length := len(stringRune)
+
+	var wg sync.WaitGroup
+
+	for idx := 0; idx < len(stringRune)/2; idx++ {
+		wg.Add(1)
+		go routineSwapper(&stringRune, idx, length-idx-1, &wg)
+	}
+
+	wg.Wait()
+	fmt.Println(string(stringRune))
 }
 
-func reverseString(forwardString string, ch *chan string) {
-	stringLength := len(forwardString)
-	stringArray := make([]string, stringLength, stringLength)
-
-	for idx, char := range forwardString {
-		stringArray[stringLength-idx-1] = string(char)
-	}
-	*ch <- strings.Join(stringArray, "")
-	return
+func routineSwapper(stringRune *[]rune, start int, end int, wg *sync.WaitGroup) {
+	arr := *stringRune
+	arr[start], arr[end] = arr[end], arr[start]
+	wg.Done()
 }
