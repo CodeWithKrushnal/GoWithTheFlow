@@ -23,13 +23,16 @@ func main() {
 
 	var wg sync.WaitGroup
 
+	routineCounter := 1
 	for idx := 0; idx < len(stringRune)/2; idx++ {
 		wg.Add(1)
+		routineCounter += 1
 		go routineSwapper(&stringRune, idx, length-idx-1, &wg)
 	}
 
 	wg.Wait()
-	fmt.Println(string(stringRune))
+	fmt.Printf("Reversed String: %s\n", string(stringRune))
+	fmt.Printf("Total No of routines launched is %d\n", routineCounter)
 }
 
 func routineSwapper(stringRune *[]rune, start int, end int, wg *sync.WaitGroup) {
