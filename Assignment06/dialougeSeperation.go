@@ -18,36 +18,41 @@ func main() {
 
 	aliceChannel := make(chan string)
 	bobChannel := make(chan string)
+	exit := make(chan bool)
 
-	seperator(conevrsation, &aliceChannel, &bobChannel)
+	seperator(conevrsation, aliceChannel, bobChannel, exit)
 }
 
-func seperator(conevrsation string, aliceChannel *chan string, bobChannel *chan string) {
+func seperator(conevrsation string, aliceChannel chan string, bobChannel chan string, exit chan bool) {
 	startidx := 0
 
+	go printer(aliceChannel, bobChannel, exit)
 	for idx, char := range conevrsation {
-		if char == 94 {
+		if string(char) == "^" { //Alternatively ASCII value 94 Could be Used for Checking
+			exit <- true
 			break
 		}
-		if char != 36 && char != 35 {
+		if string(char) != "$" && string(char) != "#" { //Alternatively ASCII values 36 & 35 respectively Could be Used for Checking
 			continue
-		} else {
-			if char == 36 {
-				go alicePrinter(aliceChannel)
-				*aliceChannel <- ("alice : " + string(conevrsation[startidx:idx]))
-			} else {
-				go bobPrinter(bobChannel)
-				*bobChannel <- ("bob : " + string(conevrsation[startidx:idx]))
-			}
-			startidx = idx + 1
 		}
+		if string(char) == "$" {
+			aliceChannel <- ("alice : " + string(conevrsation[startidx:idx]))
+		} else {
+			bobChannel <- ("bob : " + string(conevrsation[startidx:idx]))
+		}
+		startidx = idx + 1
 	}
 }
 
-func alicePrinter(aliceChannel *chan string) {
-	fmt.Println(<-*aliceChannel)
-}
-
-func bobPrinter(bobChannel *chan string) {
-	fmt.Println(<-*bobChannel)
+func printer(aliceChannel, bobChannel chan string, exit chan bool) {
+	for true {
+		select {
+		case alice := <-aliceChannel:
+			fmt.Println(alice)
+		case bob := <-bobChannel:
+			fmt.Println(bob)
+		case <-exit:
+			break
+		}
+	}
 }
