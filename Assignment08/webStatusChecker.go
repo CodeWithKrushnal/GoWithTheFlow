@@ -19,9 +19,9 @@ type WebDirectory struct {
 // Custom Datatype for Regularized Responses
 type regularResponse struct {
 	StstusCode int         `json:"statusCode"`
-	Message    string      `json:"message"`
-	Error      string      `json:eror`
-	Data       interface{} `json:"data"`
+	Message    string      `json:"message,omitempty"`
+	Error      string      `json:"eror,omitempty"`
+	Data       interface{} `json:"data,omitempty"`
 }
 
 var webDirectoryObj = WebDirectory{sync.Mutex{}, make(map[string]string)}
@@ -30,7 +30,7 @@ func main() {
 	go webStatusChecker()
 
 	mux := http.DefaultServeMux
-	mux.HandleFunc("POST /websites", addWebsites)
+	mux.HandleFunc("POST /websites", AddWebsites)
 	mux.HandleFunc("GET /websites", webStatus)
 	fmt.Println("Server Running on Port 3000")
 	log.Fatal(http.ListenAndServe(":3000", mux))
@@ -38,7 +38,7 @@ func main() {
 
 // Website Checker CRONJOB function
 func webStatusChecker() {
-	for true {
+	for {
 		for key := range webDirectoryObj.readDirectory() {
 			res, Fetcherr := http.Get("http://" + key)
 			if Fetcherr != nil {
@@ -57,18 +57,34 @@ func webStatusChecker() {
 }
 
 // POST /websites Handler
-func addWebsites(res http.ResponseWriter, req *http.Request) {
+func AddWebsites(res http.ResponseWriter, req *http.Request) {
 	var response regularResponse
 	fmt.Println("Incoming Post Request On /websites")
 	body, bodyError := io.ReadAll(req.Body)
 
 	if bodyError != nil {
-		response.assembleResult(http.StatusBadGateway, "Error reading request body", bodyError.Error(), nil, res)
+		response.assembleResult(http.StatusBadRequest, "Error reading request body", bodyError.Error(), nil, res)
+		return
+	}
+
+	if len(body) == 0 {
+		response.assembleResult(http.StatusBadGateway, "", fmt.Errorf("Error reading request body").Error(), nil, res)
+		return
+	}
+
+	if len(body) == 2 {
+		response.assembleResult(http.StatusBadRequest, "", fmt.Errorf("Missing 'websites' field in request body").Error(), nil, res)
 		return
 	}
 
 	var tempmap = make(map[string][]string)
 	json.Unmarshal(body, &tempmap)
+
+	if len(tempmap) == 0 {
+		response.assembleResult(http.StatusBadRequest, "", fmt.Errorf("Malformed JSON, Check the Brackets and Necessary Fields").Error(), nil, res)
+		return
+	}
+
 	for _, key := range tempmap["websites"] {
 		webDirectoryObj.writeDirectory(key, "UNCHECKED")
 	}
@@ -85,15 +101,20 @@ func webStatus(res http.ResponseWriter, req *http.Request) {
 		// Filter the result based on the query parameter
 		filteredResult, err := webDirectoryObj.filterDirectory(queryParam)
 		if err != nil {
-			response.assembleResult(http.StatusNotFound, "LookUp Error", err.Error(), nil, res)
+			response.assembleResult(http.StatusNotFound, "", err.Error(), nil, res)
 			return
 		}
 		response.assembleResult(http.StatusAccepted, "Request Completed Successfully", "", filteredResult, res)
 		return
 	}
+
+	if tempdirectory := webDirectoryObj.readDirectory(); len(tempdirectory) == 0 {
+		response.assembleResult(http.StatusNoContent, "", fmt.Errorf("Content Unavailable, Kindly Enter the Websites First").Error(), nil, res)
+		return
+	}
+
 	// Default Map Return
 	response.assembleResult(http.StatusAccepted, "Request Completed Successfully", "", webDirectoryObj.readDirectory(), res)
-	return
 }
 
 // Reads the WebDirectory
@@ -108,7 +129,6 @@ func (directoryObj WebDirectory) writeDirectory(key, value string) {
 	directoryObj.Lock()
 	defer directoryObj.Unlock()
 	directoryObj.webMap[key] = value
-	return
 }
 
 // Returnes Value Associated with the Queried key Error Message if Absent
@@ -124,7 +144,7 @@ func (directoryObj WebDirectory) filterDirectory(queryParam string) (string, err
 
 // Assembles the Result in a Regularized Format
 func (response *regularResponse) assembleResult(statusCode int, message string, err string, data interface{}, res http.ResponseWriter) {
-	*&response.StstusCode, *&response.Message, *&response.Error, *&response.Data = statusCode, message, err, data
+	response.StstusCode, response.Message, response.Error, response.Data = statusCode, message, err, data
 	out, MarshalErr := json.Marshal(*response)
 
 	if MarshalErr != nil {
@@ -134,5 +154,4 @@ func (response *regularResponse) assembleResult(statusCode int, message string, 
 	}
 	res.WriteHeader(statusCode)
 	res.Write(out)
-	return
 }
