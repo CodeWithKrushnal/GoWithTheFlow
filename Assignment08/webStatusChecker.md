@@ -41,7 +41,7 @@ Sample Input (for POST /websites)
 200 OK
 
 ### Sample Input (for GET /websites)
-Query param (optional) ?name=www.facebook.com
+Query param (optional) ?param=www.facebook.com
 
 ### Sample Response (for GET /websites)
 ```json
