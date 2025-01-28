@@ -38,7 +38,8 @@ func main() {
 
 // Website Checker CRONJOB function
 func webStatusChecker() {
-	for {
+	ticker := time.NewTicker(time.Second * 5)
+	for range ticker.C {
 		for key := range webDirectoryObj.readDirectory() {
 			res, Fetcherr := http.Get("http://" + key)
 			if Fetcherr != nil {
@@ -52,7 +53,6 @@ func webStatusChecker() {
 				}
 			}
 		}
-		time.Sleep(time.Second * 5)
 	}
 }
 
